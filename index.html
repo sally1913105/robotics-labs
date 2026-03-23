@@ -1,25 +1,32 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>Robotics / VLA / World Model Labs Explorer</title>
+
 <style>
+
 body{
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial;
 margin:0;
 background:#f4f6f8;
 }
+
 header{
 background:#0f172a;
 color:white;
 padding:30px;
 text-align:center;
 }
+
 .search{
 text-align:center;
 padding:20px;
 }
+
 input{
 width:420px;
 padding:10px;
@@ -27,18 +34,22 @@ font-size:16px;
 border-radius:8px;
 border:1px solid #ccc;
 }
+
 .container{
 width:1200px;
 margin:auto;
 padding:20px;
 }
+
 .category{
 margin-top:40px;
 }
+
 .category h2{
 border-left:6px solid #2563eb;
 padding-left:10px;
 }
+
 .lab{
 background:white;
 padding:20px;
@@ -46,22 +57,23 @@ margin:20px 0;
 border-radius:10px;
 box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
+
 .rank{
 font-weight:bold;
 color:#2563eb;
 }
+
 .location{
 color:#666;
 font-size:14px;
 }
-.faculty{
-margin-top:10px;
-}
+
 .faculty a{
 display:block;
 color:#2563eb;
 text-decoration:none;
 }
+
 .tag{
 display:inline-block;
 background:#e2e8f0;
@@ -70,151 +82,270 @@ border-radius:6px;
 margin:4px;
 font-size:12px;
 }
-footer{
-margin-top:40px;
-padding:20px;
-text-align:center;
-color:#666;
-font-size:14px;
-}
+
 </style>
-
-<script>
-function searchLabs(){
-let input=document.getElementById("search").value.toLowerCase();
-let labs=document.getElementsByClassName("lab");
-
-for(let i=0;i<labs.length;i++){
-let text=labs[i].innerText.toLowerCase();
-if(text.includes(input))
-labs[i].style.display="block";
-else
-labs[i].style.display="none";
-}
-}
-</script>
 
 </head>
 
 <body>
 
 <header>
+
 <h1>US Robotics / VLA / World Model Labs Explorer</h1>
-<p>Search top robotics research labs, professors, and universities</p>
+<p>Search top robotics research labs and professors</p>
+
 </header>
 
 <div class="search">
-<input id="search" onkeyup="searchLabs()" placeholder="Search professor, university, or research area">
+
+<input id="search" placeholder="Search professor, lab, university..." onkeyup="searchLabs()">
+
 </div>
 
-<div class="container">
+<div class="container" id="content"></div>
 
-<div class="category">
-<h2>Robot Learning / Embodied AI</h2>
+<script>
 
-<div class="lab">
-<p class="rank">Rank #1</p>
-<h3>Berkeley Artificial Intelligence Research (BAIR)</h3>
-<p class="location">University: UC Berkeley | Location: Berkeley, California</p>
-<div class="tag">Robot Learning</div>
-<div class="tag">Embodied AI</div>
-<div class="tag">Reinforcement Learning</div>
+/* ===========================
+DATABASE
+=========================== */
+
+const labs = [
+
+{
+category:"Robot Learning",
+rank:1,
+lab:"BAIR",
+university:"UC Berkeley",
+location:"Berkeley, California",
+tags:["Robot Learning","Embodied AI","Reinforcement Learning"],
+faculty:[
+{name:"Sergey Levine",link:"https://people.eecs.berkeley.edu/~svlevine"},
+{name:"Pieter Abbeel",link:"https://people.eecs.berkeley.edu/~pabbeel"},
+{name:"Chelsea Finn",link:"https://ai.stanford.edu/~cbfinn"}
+]
+},
+
+{
+category:"Robot Learning",
+rank:2,
+lab:"Stanford Vision & Learning Lab",
+university:"Stanford University",
+location:"Stanford, California",
+tags:["Embodied AI","Robot Perception"],
+faculty:[
+{name:"Fei-Fei Li",link:"https://profiles.stanford.edu/fei-fei-li"},
+{name:"Jiajun Wu",link:"https://jiajunwu.com"}
+]
+},
+
+{
+category:"VLA",
+rank:1,
+lab:"Stanford Robotics Center",
+university:"Stanford University",
+location:"Stanford, California",
+tags:["VLA","Foundation Models"],
+faculty:[
+{name:"Dorsa Sadigh",link:"https://dorsa.fyi"},
+{name:"Percy Liang",link:"https://cs.stanford.edu/~pliang"}
+]
+},
+
+{
+category:"VLA",
+rank:2,
+lab:"RAIL Lab",
+university:"UC Berkeley",
+location:"Berkeley, California",
+tags:["Robot Learning","VLA"],
+faculty:[
+{name:"Sergey Levine",link:"https://people.eecs.berkeley.edu/~svlevine"}
+]
+},
+
+{
+category:"Autonomous Driving",
+rank:1,
+lab:"Robotics Institute",
+university:"Carnegie Mellon University",
+location:"Pittsburgh, Pennsylvania",
+tags:["Autonomous Driving","Perception"],
+faculty:[
+{name:"Sebastian Scherer",link:"https://theairlab.org"},
+{name:"Maxim Likhachev",link:"https://www.cs.cmu.edu/~maxim"},
+{name:"David Held",link:"https://davheld.github.io"}
+]
+},
+
+{
+category:"Drone Robotics",
+rank:1,
+lab:"GRASP Lab",
+university:"University of Pennsylvania",
+location:"Philadelphia, Pennsylvania",
+tags:["Drone","Swarm Robotics"],
+faculty:[
+{name:"Vijay Kumar",link:"https://www.grasp.upenn.edu/people/vijay-kumar"},
+{name:"Kostas Daniilidis",link:"https://www.cis.upenn.edu/~kostas"}
+]
+},
+
+{
+category:"Humanoid Robotics",
+rank:1,
+lab:"MIT Robot Locomotion Group",
+university:"MIT",
+location:"Cambridge, Massachusetts",
+tags:["Humanoid","Control"],
+faculty:[
+{name:"Russ Tedrake",link:"https://groups.csail.mit.edu/robotics-center/people/tedrake"}
+]
+},
+
+{
+category:"Embodied AI",
+rank:1,
+lab:"Personal Robotics Lab",
+university:"University of Washington",
+location:"Seattle, Washington",
+tags:["Embodied AI","Robot Learning"],
+faculty:[
+{name:"Dieter Fox",link:"https://homes.cs.washington.edu/~fox"}
+]
+},
+
+{
+category:"Autonomous Systems",
+rank:1,
+lab:"Michigan Robotics",
+university:"University of Michigan",
+location:"Ann Arbor, Michigan",
+tags:["Autonomy","Perception"],
+faculty:[
+{name:"Mingyu Ding",link:"#"}
+]
+},
+
+{
+category:"AI Robotics",
+rank:1,
+lab:"Georgia Tech IRIM",
+university:"Georgia Tech",
+location:"Atlanta, Georgia",
+tags:["AI Robotics"],
+faculty:[
+{name:"Ayanna Howard",link:"https://ayannahoward.com"}
+]
+}
+
+];
+
+
+/* ===========================
+RENDER
+=========================== */
+
+function render(){
+
+const container=document.getElementById("content")
+
+container.innerHTML=""
+
+let categories={}
+
+labs.forEach(lab=>{
+if(!categories[lab.category]) categories[lab.category]=[]
+categories[lab.category].push(lab)
+})
+
+for(let cat in categories){
+
+let section=document.createElement("div")
+section.className="category"
+
+let title=document.createElement("h2")
+title.innerText=cat
+
+section.appendChild(title)
+
+categories[cat].sort((a,b)=>a.rank-b.rank)
+
+categories[cat].forEach(lab=>{
+
+let div=document.createElement("div")
+div.className="lab"
+
+let facultyHTML=""
+
+lab.faculty.forEach(f=>{
+facultyHTML+=`<a href="${f.link}" target="_blank">${f.name}</a>`
+})
+
+let tagHTML=""
+
+lab.tags.forEach(t=>{
+tagHTML+=`<span class="tag">${t}</span>`
+})
+
+div.innerHTML=`
+
+<p class="rank">Rank #${lab.rank}</p>
+
+<h3>${lab.lab}</h3>
+
+<p class="location">University: ${lab.university} | Location: ${lab.location}</p>
+
+${tagHTML}
+
 <div class="faculty">
+
 <b>Faculty</b>
-<a href="https://people.eecs.berkeley.edu/~svlevine">Sergey Levine</a>
-<a href="https://people.eecs.berkeley.edu/~pabbeel">Pieter Abbeel</a>
-<a href="https://ai.stanford.edu/~cbfinn/">Chelsea Finn</a>
-</div>
-</div>
 
-<div class="lab">
-<p class="rank">Rank #2</p>
-<h3>Stanford Vision and Learning Lab</h3>
-<p class="location">University: Stanford University | Location: Stanford, California</p>
-<div class="tag">Embodied AI</div>
-<div class="tag">Robot Perception</div>
-<div class="faculty">
-<b>Faculty</b>
-<a href="https://profiles.stanford.edu/fei-fei-li">Fei‑Fei Li</a>
-<a href="https://jiajunwu.com/">Jiajun Wu</a>
-</div>
-</div>
+${facultyHTML}
 
 </div>
 
-<div class="category">
-<h2>Vision‑Language‑Action (VLA)</h2>
+`
 
-<div class="lab">
-<p class="rank">Rank #1</p>
-<h3>Stanford Robotics Center</h3>
-<p class="location">University: Stanford University | Location: Stanford, California</p>
-<div class="tag">VLA</div>
-<div class="tag">Foundation Models</div>
-<div class="faculty">
-<b>Faculty</b>
-<a href="https://dorsa.fyi/">Dorsa Sadigh</a>
-<a href="https://cs.stanford.edu/~pliang/">Percy Liang</a>
-</div>
-</div>
+section.appendChild(div)
 
-<div class="lab">
-<p class="rank">Rank #2</p>
-<h3>Robot Learning Lab (RAIL)</h3>
-<p class="location">University: UC Berkeley | Location: Berkeley, California</p>
-<div class="tag">Robot Learning</div>
-<div class="tag">VLA</div>
-<div class="faculty">
-<b>Faculty</b>
-<a href="https://people.eecs.berkeley.edu/~svlevine/">Sergey Levine</a>
-</div>
-</div>
+})
 
-</div>
+container.appendChild(section)
 
-<div class="category">
-<h2>Autonomous Driving / Robotics Systems</h2>
+}
 
-<div class="lab">
-<p class="rank">Rank #1</p>
-<h3>Robotics Institute</h3>
-<p class="location">University: Carnegie Mellon University | Location: Pittsburgh, Pennsylvania</p>
-<div class="tag">Autonomous Driving</div>
-<div class="tag">Robot Perception</div>
-<div class="faculty">
-<b>Faculty</b>
-<a href="https://theairlab.org/">Sebastian Scherer</a>
-<a href="https://www.cs.cmu.edu/~maxim/">Maxim Likhachev</a>
-<a href="https://davheld.github.io/">David Held</a>
-</div>
-</div>
+}
 
-</div>
 
-<div class="category">
-<h2>Drone / Multi‑Robot Systems</h2>
+/* ===========================
+SEARCH
+=========================== */
 
-<div class="lab">
-<p class="rank">Rank #1</p>
-<h3>GRASP Lab</h3>
-<p class="location">University: University of Pennsylvania | Location: Philadelphia, Pennsylvania</p>
-<div class="tag">Drone Robotics</div>
-<div class="tag">Swarm Robotics</div>
-<div class="faculty">
-<b>Faculty</b>
-<a href="https://www.grasp.upenn.edu/people/vijay-kumar/">Vijay Kumar</a>
-<a href="https://www.cis.upenn.edu/~kostas/">Kostas Daniilidis</a>
-</div>
-</div>
+function searchLabs(){
 
-</div>
+let input=document.getElementById("search").value.toLowerCase()
 
-<footer>
-Robotics Labs Explorer — generated template for research navigation.
-You can expand this by adding more universities, labs, and professors.
-</footer>
+let labsDOM=document.getElementsByClassName("lab")
 
-</div>
+for(let lab of labsDOM){
+
+let text=lab.innerText.toLowerCase()
+
+if(text.includes(input))
+lab.style.display="block"
+else
+lab.style.display="none"
+
+}
+
+}
+
+render()
+
+</script>
 
 </body>
+
 </html>
