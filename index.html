@@ -1,128 +1,340 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Top US Robotics & VLA Labs</title>
+<title>US Robotics / VLA / World Model Labs</title>
 
 <style>
 
 body{
-font-family: Arial;
-background:#f5f5f5;
+font-family:Arial;
+background:#f4f6f9;
 margin:0;
-padding:0;
 }
 
 header{
-background:#1e2a38;
+background:#0f172a;
 color:white;
 padding:30px;
 text-align:center;
 }
 
-.container{
-width:1100px;
-margin:auto;
-}
-
-.lab{
-background:white;
-margin:20px;
+.search{
+text-align:center;
 padding:20px;
-border-radius:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
-.lab h2{
-color:#1e2a38;
+input{
+width:400px;
+padding:10px;
+font-size:16px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.container{
+width:1200px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:20px;
+box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.card h3{
+margin-top:0;
+color:#1e293b;
 }
 
 .location{
 color:#666;
+font-size:14px;
+}
+
+.tags{
+margin-top:10px;
+}
+
+.tag{
+display:inline-block;
+background:#e2e8f0;
+padding:4px 8px;
+border-radius:6px;
+margin:3px;
+font-size:12px;
 }
 
 a{
-color:#0077cc;
+color:#2563eb;
 }
 
 </style>
+
+<script>
+
+function searchLabs(){
+
+let input=document.getElementById("search").value.toLowerCase();
+let cards=document.getElementsByClassName("card");
+
+for(let i=0;i<cards.length;i++){
+
+let text=cards[i].innerText.toLowerCase();
+
+if(text.includes(input))
+cards[i].style.display="block";
+else
+cards[i].style.display="none";
+
+}
+
+}
+
+</script>
+
 </head>
 
 <body>
 
 <header>
-<h1>Top US Robotics / VLA / World Model Labs</h1>
-<p>Leading Robotics Research Labs in the United States</p>
+<h1>US Robotics / VLA / World Model Labs</h1>
+<p>Top Robotics Research Labs in the United States</p>
 </header>
+
+<div class="search">
+<input id="search" onkeyup="searchLabs()" placeholder="Search university, lab, or topic...">
+</div>
 
 <div class="container">
 
-<div class="lab">
-<h2>CMU Robotics Institute</h2>
-<p class="location">Location: Pittsburgh, Pennsylvania</p>
-<p>
-The Robotics Institute is one of the world's most influential robotics research
-centers focusing on autonomous systems, perception, robot learning,
-and embodied AI.
-</p>
-<p>
-Website:
-<a href="https://www.ri.cmu.edu/" target="_blank">https://www.ri.cmu.edu</a>
-</p>
+<!-- CMU -->
+
+<div class="card">
+<h3>Robotics Institute — Carnegie Mellon University</h3>
+<p class="location">📍 Pittsburgh, Pennsylvania</p>
+<p>One of the most influential robotics research institutes in the world focusing on autonomous systems, perception, and robot learning.</p>
+<a href="https://www.ri.cmu.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">Autonomous Driving</span>
+<span class="tag">Embodied AI</span>
+</div>
 </div>
 
-<div class="lab">
-<h2>Stanford Robotics Center</h2>
-<p class="location">Location: Stanford, California</p>
-<p>
-Stanford Robotics Center coordinates robotics research across Stanford
-including robot learning, computer vision, manipulation,
-and autonomous systems.
-</p>
-<p>
-Website:
-<a href="https://src.stanford.edu/" target="_blank">https://src.stanford.edu</a>
-</p>
+<div class="card">
+<h3>AirLab — CMU</h3>
+<p class="location">📍 Pittsburgh, Pennsylvania</p>
+<p>Autonomy and Robotics Laboratory focusing on aerial robots and autonomous navigation.</p>
+<a href="https://theairlab.org/">Lab Website</a>
+<div class="tags">
+<span class="tag">Drones</span>
+<span class="tag">Autonomous Systems</span>
+</div>
 </div>
 
-<div class="lab">
-<h2>Berkeley Artificial Intelligence Research (BAIR)</h2>
-<p class="location">Location: Berkeley, California</p>
-<p>
-BAIR is a world-leading research lab focusing on robot learning,
-reinforcement learning, embodied AI, and foundation models.
-</p>
-<p>
-Website:
-<a href="https://bair.berkeley.edu/" target="_blank">https://bair.berkeley.edu</a>
-</p>
+<!-- Stanford -->
+
+<div class="card">
+<h3>Stanford Robotics Center</h3>
+<p class="location">📍 Stanford, California</p>
+<p>Coordinates robotics research across Stanford including manipulation, perception and robot learning.</p>
+<a href="https://src.stanford.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">Manipulation</span>
+</div>
 </div>
 
-<div class="lab">
-<h2>MIT CSAIL Robotics</h2>
-<p class="location">Location: Cambridge, Massachusetts</p>
-<p>
-MIT CSAIL conducts cutting-edge robotics research including
-robot perception, manipulation, multi-modal models,
-and autonomous navigation.
-</p>
-<p>
-Website:
-<a href="https://www.csail.mit.edu/" target="_blank">https://www.csail.mit.edu</a>
-</p>
+<div class="card">
+<h3>Stanford Vision and Learning Lab</h3>
+<p class="location">📍 Stanford, California</p>
+<p>Research on visual understanding and embodied AI.</p>
+<a href="https://svl.stanford.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">VLA</span>
+<span class="tag">Embodied AI</span>
+</div>
 </div>
 
-<div class="lab">
-<h2>UPenn GRASP Lab</h2>
-<p class="location">Location: Philadelphia, Pennsylvania</p>
-<p>
-The GRASP Lab is a leading robotics lab working on drone robotics,
-multi-robot systems, manipulation, and robot perception.
-</p>
-<p>
-Website:
-<a href="https://www.grasp.upenn.edu/" target="_blank">https://www.grasp.upenn.edu</a>
-</p>
+<!-- Berkeley -->
+
+<div class="card">
+<h3>BAIR — UC Berkeley</h3>
+<p class="location">📍 Berkeley, California</p>
+<p>Berkeley Artificial Intelligence Research focuses on robot learning, reinforcement learning, and foundation models.</p>
+<a href="https://bair.berkeley.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">World Model</span>
+<span class="tag">Reinforcement Learning</span>
+</div>
+</div>
+
+<div class="card">
+<h3>Robot Learning Lab — Berkeley</h3>
+<p class="location">📍 Berkeley, California</p>
+<p>Directed by Sergey Levine focusing on scalable robot learning.</p>
+<a href="https://rail.eecs.berkeley.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">Manipulation</span>
+</div>
+</div>
+
+<!-- MIT -->
+
+<div class="card">
+<h3>CSAIL Robotics — MIT</h3>
+<p class="location">📍 Cambridge, Massachusetts</p>
+<p>MIT's largest research lab working on AI, robotics and computer vision.</p>
+<a href="https://www.csail.mit.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robotics</span>
+<span class="tag">Autonomy</span>
+</div>
+</div>
+
+<div class="card">
+<h3>Robot Locomotion Group — MIT</h3>
+<p class="location">📍 Cambridge, Massachusetts</p>
+<p>Research on legged robots and dynamic locomotion.</p>
+<a href="https://groups.csail.mit.edu/robotics-center/">Lab Website</a>
+<div class="tags">
+<span class="tag">Humanoid</span>
+<span class="tag">Control</span>
+</div>
+</div>
+
+<!-- UPenn -->
+
+<div class="card">
+<h3>GRASP Lab — UPenn</h3>
+<p class="location">📍 Philadelphia, Pennsylvania</p>
+<p>General Robotics Automation Sensing and Perception Lab focusing on drones and multi-robot systems.</p>
+<a href="https://www.grasp.upenn.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Swarm</span>
+<span class="tag">Perception</span>
+</div>
+</div>
+
+<!-- Michigan -->
+
+<div class="card">
+<h3>Michigan Robotics</h3>
+<p class="location">📍 Ann Arbor, Michigan</p>
+<p>Large interdisciplinary robotics institute working on autonomous systems.</p>
+<a href="https://robotics.umich.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Autonomous Driving</span>
+<span class="tag">Robot Learning</span>
+</div>
+</div>
+
+<!-- Georgia Tech -->
+
+<div class="card">
+<h3>IRIM — Georgia Tech</h3>
+<p class="location">📍 Atlanta, Georgia</p>
+<p>Institute for Robotics and Intelligent Machines researching AI robotics and human-robot interaction.</p>
+<a href="https://robotics.gatech.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Human Robot Interaction</span>
+</div>
+</div>
+
+<!-- UT Austin -->
+
+<div class="card">
+<h3>Texas Robotics</h3>
+<p class="location">📍 Austin, Texas</p>
+<p>Robotics research spanning perception, planning and learning.</p>
+<a href="https://robotics.utexas.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">Autonomy</span>
+</div>
+</div>
+
+<!-- Columbia -->
+
+<div class="card">
+<h3>Columbia Robotics Lab</h3>
+<p class="location">📍 New York City, New York</p>
+<p>Research in robot manipulation and learning.</p>
+<a href="https://robotics.columbia.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Manipulation</span>
+</div>
+</div>
+
+<!-- UW -->
+
+<div class="card">
+<h3>Personal Robotics Lab — UW</h3>
+<p class="location">📍 Seattle, Washington</p>
+<p>Human-centered robot learning and household robotics.</p>
+<a href="https://personalrobotics.cs.washington.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Robot Learning</span>
+<span class="tag">Embodied AI</span>
+</div>
+</div>
+
+<!-- Cornell -->
+
+<div class="card">
+<h3>Cornell Robotics</h3>
+<p class="location">📍 Ithaca, New York</p>
+<p>Research on perception, planning and robot interaction.</p>
+<a href="https://robotics.cornell.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Perception</span>
+</div>
+</div>
+
+<!-- Princeton -->
+
+<div class="card">
+<h3>Princeton Vision & Robotics</h3>
+<p class="location">📍 Princeton, New Jersey</p>
+<p>Research on computer vision, robotics and machine learning.</p>
+<a href="https://vision.princeton.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Vision</span>
+<span class="tag">Embodied AI</span>
+</div>
+</div>
+
+<!-- Caltech -->
+
+<div class="card">
+<h3>Caltech Robotics</h3>
+<p class="location">📍 Pasadena, California</p>
+<p>Research on control theory, robotics and autonomous systems.</p>
+<a href="https://robotics.caltech.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">Control</span>
+</div>
+</div>
+
+<!-- USC -->
+
+<div class="card">
+<h3>USC Robotics</h3>
+<p class="location">📍 Los Angeles, California</p>
+<p>One of the largest robotics research centers in the US.</p>
+<a href="https://robotics.usc.edu/">Lab Website</a>
+<div class="tags">
+<span class="tag">AI Robotics</span>
+</div>
 </div>
 
 </div>
