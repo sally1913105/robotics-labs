@@ -1,351 +1,1591 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-
 <meta charset="UTF-8">
-
-<title>Robotics / VLA / World Model Labs Explorer</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博士留学资料管理系统 · 美国机器人 & VLA 实验室导航</title>
 <style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f4f6f8;
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --text: #1e293b;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --yellow: #d97706;
+  --yellow-bg: #fffbeb;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
 }
 
-header{
-background:#0f172a;
-color:white;
-padding:30px;
-text-align:center;
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1e40af 100%);
+  color: white;
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+.header-left h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.header-left p {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.header-search {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+}
+.header-search input {
+  width: 100%;
+  padding: 10px 16px 10px 44px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+.header-search input::placeholder { color: rgba(255,255,255,0.5); }
+.header-search input:focus {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.4);
+}
+.header-search .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.5);
+  font-size: 16px;
+}
+.header-stats {
+  display: flex;
+  gap: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.header-stats .stat-num { font-size: 1.4rem; font-weight: 700; color: #60a5fa; }
+.header-stats .stat-label { color: #94a3b8; }
+
+/* ===== LAYOUT ===== */
+.app {
+  display: flex;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  gap: 24px;
+  align-items: flex-start;
 }
 
-.search{
-text-align:center;
-padding:20px;
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 96px;
+}
+.filter-panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.filter-header h3 { font-size: 0.9rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.clear-btn {
+  font-size: 12px;
+  color: var(--primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.clear-btn:hover { background: var(--primary-light); }
+.filter-group { margin-bottom: 20px; }
+.filter-group-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13.5px;
+  user-select: none;
+}
+.filter-item:hover { background: var(--bg); }
+.filter-item input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+.filter-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.sort-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  outline: none;
+}
+.sort-select:focus { border-color: var(--primary); }
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  flex: 1;
+  min-width: 0;
+}
+.results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 0 2px;
+}
+.results-count { font-size: 14px; color: var(--text2); }
+.results-count strong { color: var(--text); }
+.view-toggle { display: flex; gap: 4px; }
+.view-btn {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.view-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* ===== CARD GRID ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+.cards-grid.list-view {
+  grid-template-columns: 1fr;
 }
 
-input{
-width:420px;
-padding:10px;
-font-size:16px;
-border-radius:8px;
-border:1px solid #ccc;
+/* ===== LAB CARD ===== */
+.lab-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.lab-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--primary);
+  border-radius: 12px 0 0 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.lab-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+.lab-card:hover::before { opacity: 1; }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.card-rank-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.admit-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.admit-open { background: var(--green-bg); color: var(--green); }
+.admit-closing { background: var(--yellow-bg); color: var(--yellow); }
+.admit-closed { background: var(--red-bg); color: var(--red); }
+
+.card-lab-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+.card-university {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.card-university span { color: var(--text3); margin: 0 4px; }
+.card-intro {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.tag {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.tag.vla { background: #fdf4ff; color: #9333ea; }
+.tag.embodied { background: #f0fdf4; color: #15803d; }
+.tag.control { background: #fff7ed; color: #c2410c; }
+.tag.perception { background: #f0f9ff; color: #0369a1; }
+.tag.llm { background: #fdf4ff; color: #7c3aed; }
+.card-professors {
+  font-size: 12.5px;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.card-professors strong { color: var(--text); }
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+}
+.card-season { display: flex; align-items: center; gap: 4px; }
+.card-funding { display: flex; align-items: center; gap: 4px; }
+.view-detail-btn {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 12px;
 }
 
-.container{
-width:1200px;
-margin:auto;
-padding:20px;
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  transform: scale(0.95) translateY(20px);
+  transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal-header {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  color: white;
+  padding: 24px 28px 20px;
+  flex-shrink: 0;
+}
+.modal-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.modal-title { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+.modal-subtitle { font-size: 0.88rem; color: #94a3b8; margin-top: 2px; }
+.modal-close {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.2); }
+.modal-header-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.modal-header-tags .tag {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 12px;
 }
 
-.category{
-margin-top:40px;
+/* Modal Tabs */
+.modal-tabs {
+  display: flex;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
 }
-
-.category h2{
-border-left:6px solid #2563eb;
-padding-left:10px;
+.tab-btn {
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-btn:hover:not(.active) { color: var(--text); }
 
-.lab{
-background:white;
-padding:20px;
-margin:20px 0;
-border-radius:10px;
-box-shadow:0 2px 10px rgba(0,0,0,0.08);
+/* Modal Body */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
 }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
-.rank{
-font-weight:bold;
-color:#2563eb;
+/* Overview Tab */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.info-item { background: var(--surface2); border-radius: 10px; padding: 12px 14px; }
+.info-item .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.info-item .value { font-size: 14px; color: var(--text); font-weight: 500; }
+.info-item .value a { color: var(--primary); text-decoration: none; }
+.info-item .value a:hover { text-decoration: underline; }
+.section-title { font-size: 0.82rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; }
+.intro-text { font-size: 14px; color: var(--text2); line-height: 1.7; background: var(--surface2); border-radius: 10px; padding: 14px 16px; }
+
+/* Professor Cards */
+.prof-list { display: flex; flex-direction: column; gap: 14px; }
+.prof-card { background: var(--surface2); border-radius: 10px; padding: 16px; }
+.prof-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.prof-title { font-size: 12.5px; color: var(--text2); margin-bottom: 8px; }
+.prof-directions { font-size: 13px; color: var(--text); margin-bottom: 10px; }
+.prof-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.prof-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+  background: var(--surface);
+  transition: all 0.15s;
 }
+.prof-link:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-.location{
-color:#666;
-font-size:14px;
+/* Admission Tab */
+.admit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.admit-card { background: var(--surface2); border-radius: 10px; padding: 14px 16px; }
+.admit-card .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.admit-card .value { font-size: 14px; font-weight: 600; color: var(--text); }
+.admit-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+.notes-box { background: var(--yellow-bg); border: 1px solid #fed7aa; border-radius: 10px; padding: 14px 16px; font-size: 13.5px; color: #92400e; line-height: 1.6; }
+
+/* Students Tab */
+.student-section { margin-bottom: 20px; }
+.student-list { display: flex; flex-direction: column; gap: 8px; }
+.student-item { background: var(--surface2); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--text); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-item a { color: var(--primary); text-decoration: none; font-size: 12px; }
+.alumni-text { font-size: 13.5px; color: var(--text2); line-height: 1.7; background: var(--surface2); border-radius: 10px; padding: 14px 16px; }
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
 }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
 
-.faculty a{
-display:block;
-color:#2563eb;
-text-decoration:none;
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; position: static; }
+  .cards-grid { grid-template-columns: 1fr; }
+  header { flex-wrap: wrap; }
+  .header-stats { display: none; }
 }
-
-.tag{
-display:inline-block;
-background:#e2e8f0;
-padding:4px 8px;
-border-radius:6px;
-margin:4px;
-font-size:12px;
-}
-
 </style>
-
 </head>
-
 <body>
 
+<!-- HEADER -->
 <header>
-
-<h1>US Robotics / VLA / World Model Labs Explorer</h1>
-<p>Search top robotics research labs and professors</p>
-
+  <div class="header-left">
+    <h1>🤖 美国机器人 &amp; VLA 实验室导航</h1>
+    <p>博士留学资料管理系统 · 顶尖高校实验室一站式查询</p>
+  </div>
+  <div class="header-search">
+    <span class="icon">🔍</span>
+    <input id="search-input" type="text" placeholder="搜索实验室、导师、学校..." oninput="applyFilters()">
+  </div>
+  <div class="header-stats">
+    <div><div class="stat-num" id="stat-labs">15</div><div class="stat-label">实验室</div></div>
+    <div><div class="stat-num" id="stat-profs">40+</div><div class="stat-label">导师</div></div>
+    <div><div class="stat-num">Top 20</div><div class="stat-label">高校覆盖</div></div>
+  </div>
 </header>
 
-<div class="search">
+<!-- APP -->
+<div class="app">
 
-<input id="search" placeholder="Search professor, lab, university..." onkeyup="searchLabs()">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="filter-panel">
+      <div class="filter-header">
+        <h3>筛选</h3>
+        <button class="clear-btn" onclick="clearFilters()">清除全部</button>
+      </div>
 
+      <!-- Sort -->
+      <div class="filter-group">
+        <div class="filter-group-title">排序方式</div>
+        <select class="sort-select" id="sort-select" onchange="applyFilters()">
+          <option value="rank">按综合排名</option>
+          <option value="name">按学校名称</option>
+          <option value="admit-open">招生开放优先</option>
+        </select>
+      </div>
+
+      <!-- Research Direction -->
+      <div class="filter-group" id="filter-directions">
+        <div class="filter-group-title">研究方向</div>
+      </div>
+
+      <!-- Location -->
+      <div class="filter-group" id="filter-locations">
+        <div class="filter-group-title">地理位置</div>
+      </div>
+
+      <!-- Admission Status -->
+      <div class="filter-group" id="filter-status">
+        <div class="filter-group-title">招生状态</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="results-bar">
+      <div class="results-count" id="results-count">共 <strong>15</strong> 个实验室</div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="grid-btn" onclick="setView('grid')">⊞ 网格</button>
+        <button class="view-btn" id="list-btn" onclick="setView('list')">☰ 列表</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="cards-container"></div>
+  </main>
 </div>
 
-<div class="container" id="content"></div>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-header-top">
+        <div>
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-subtitle" id="modal-subtitle"></div>
+        </div>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+      <div class="modal-header-tags" id="modal-tags"></div>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" onclick="switchTab('overview')">📋 概览</button>
+      <button class="tab-btn" onclick="switchTab('professors')">👨‍🔬 导师信息</button>
+      <button class="tab-btn" onclick="switchTab('admission')">📝 招生情况</button>
+      <button class="tab-btn" onclick="switchTab('students')">🎓 学生信息</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
 
 <script>
-
-/* ===========================
-DATABASE
-=========================== */
-
-const labs = [
-
+/* ============================================================
+   DATABASE — 美国顶尖机器人 & VLA 实验室
+   ============================================================ */
+const LABS = [
 {
-category:"Robot Learning",
-rank:1,
-lab:"BAIR",
-university:"UC Berkeley",
-location:"Berkeley, California",
-tags:["Robot Learning","Embodied AI","Reinforcement Learning"],
-faculty:[
-{name:"Sergey Levine",link:"https://people.eecs.berkeley.edu/~svlevine"},
-{name:"Pieter Abbeel",link:"https://people.eecs.berkeley.edu/~pabbeel"},
-{name:"Chelsea Finn",link:"https://ai.stanford.edu/~cbfinn"}
-]
+  id: 1,
+  rank: 1,
+  university: "Massachusetts Institute of Technology",
+  uShort: "MIT",
+  lab: "Computer Science & Artificial Intelligence Laboratory (CSAIL)",
+  directions: ["Robot Learning", "Embodied AI", "Manipulation", "Control"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "Cambridge, Massachusetts",
+  address: "32 Vassar St, Cambridge, MA 02139",
+  lab_url: "https://www.csail.mit.edu",
+  intro: "MIT CSAIL 是全球最顶尖的 AI 与机器人研究机构之一，汇聚了世界领先的机器人学、机器学习与具身智能研究团队。涵盖机器人操控、运动控制、人机交互等多个核心方向，近年深入布局基础模型在机器人领域的应用。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA/TA 全额资助（含学费+生活费）",
+    notes: "CSAIL 博士录取竞争极为激烈，建议提前套磁并展示与导师方向高度匹配的研究经历；GRE 可选；TOEFL 最低 100 分。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Russ Tedrake",
+      title: "Professor of EECS",
+      directions: "机器人运动规划、优化控制、强化学习用于机器人",
+      homepage: "https://groups.csail.mit.edu/locomotion/russt.html",
+      scholar: "https://scholar.google.com/citations?user=0NTe5YUAAAAJ",
+      x: "https://x.com/russtedrake",
+      github: "https://github.com/RussTedrake"
+    },
+    {
+      name: "Leslie Kaelbling",
+      title: "Professor of EECS",
+      directions: "任务与运动规划、符号-几何混合推理",
+      homepage: "https://people.csail.mit.edu/lpk",
+      scholar: "https://scholar.google.com/citations?user=IB5A7jwAAAAJ",
+      x: "",
+      github: ""
+    },
+    {
+      name: "Pulkit Agrawal",
+      title: "Assistant Professor",
+      directions: "具身智能、机器人学习、视觉运动策略",
+      homepage: "https://people.csail.mit.edu/pulkitag",
+      scholar: "https://scholar.google.com/citations?user=6aeKQ48AAAAJ",
+      x: "https://x.com/pulkitag",
+      github: "https://github.com/pulkitag"
+    }
+  ],
+  students: {
+    current: ["Tao Chen（操控与灵巧手）", "Shuo Yang（扩散模型+机器人）", "Antonio Loquercio（无人机学习）"],
+    alumni: "毕业生遍布 Google DeepMind、OpenAI、Meta AI、Toyota Research Institute 以及各顶尖高校教职。"
+  }
 },
-
 {
-category:"Robot Learning",
-rank:2,
-lab:"Stanford Vision & Learning Lab",
-university:"Stanford University",
-location:"Stanford, California",
-tags:["Embodied AI","Robot Perception"],
-faculty:[
-{name:"Fei-Fei Li",link:"https://profiles.stanford.edu/fei-fei-li"},
-{name:"Jiajun Wu",link:"https://jiajunwu.com"}
-]
+  id: 2,
+  rank: 1,
+  university: "Stanford University",
+  uShort: "Stanford",
+  lab: "Stanford Vision and Learning Lab (SVL)",
+  directions: ["Robot Learning", "Embodied AI", "Perception", "Foundation Models"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Stanford, California",
+  address: "353 Jane Stanford Way, Stanford, CA 94305",
+  lab_url: "https://svl.stanford.edu",
+  intro: "Stanford SVL 由李飞飞教授创立，在计算机视觉、具身智能与机器人学习领域享有国际盛誉。近年聚焦于视觉-语言-动作基础模型、大规模仿真数据生成与多模态感知，是 VLA 方向最具影响力的实验室之一。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "11月20日 (CS系)",
+    funding: "RA/TA 全额资助",
+    notes: "Stanford CS 博士申请采用委员会制，套磁建议在11月前完成；研究经历（论文/项目）权重极高。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Fei-Fei Li",
+      title: "Professor of CS (Sequoia Capital Professor)",
+      directions: "计算机视觉、具身智能、AI for Healthcare",
+      homepage: "https://profiles.stanford.edu/fei-fei-li",
+      scholar: "https://scholar.google.com/citations?user=rDfyQnIAAAAJ",
+      x: "https://x.com/drfeifei",
+      github: ""
+    },
+    {
+      name: "Jiajun Wu",
+      title: "Assistant Professor of CS",
+      directions: "物理世界建模、具身推理、生成模型与机器人",
+      homepage: "https://jiajunwu.com",
+      scholar: "https://scholar.google.com/citations?user=2efgRR4AAAAJ",
+      x: "https://x.com/jiajunwu_cs",
+      github: "https://github.com/jiajunwu"
+    }
+  ],
+  students: {
+    current: ["Haoyu Zhen（具身VLA）", "Yilun Du（扩散策略）", "Mengdi Xu（机器人泛化）"],
+    alumni: "毕业生广泛分布于顶级 AI 公司研究院及全球顶尖高校，多人创办具身 AI 初创公司。"
+  }
 },
-
 {
-category:"VLA",
-rank:1,
-lab:"Stanford Robotics Center",
-university:"Stanford University",
-location:"Stanford, California",
-tags:["VLA","Foundation Models"],
-faculty:[
-{name:"Dorsa Sadigh",link:"https://dorsa.fyi"},
-{name:"Percy Liang",link:"https://cs.stanford.edu/~pliang"}
-]
+  id: 3,
+  rank: 1,
+  university: "Stanford University",
+  uShort: "Stanford",
+  lab: "Stanford Robotics & Embodied AI Lab (REAL) / Interactive Perception and Robot Learning (IPRL)",
+  directions: ["VLA", "HRI", "Foundation Models", "Robot Learning"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Stanford, California",
+  address: "353 Jane Stanford Way, Stanford, CA 94305",
+  lab_url: "https://dorsa.fyi/lab/",
+  intro: "REAL/IPRL 由 Dorsa Sadigh 教授领导，是美国 HRI（人机交互）和 VLA 研究的核心团队。专注于大语言模型驱动的机器人策略、人机协作学习、基于偏好的强化学习等前沿方向，与工业界有深度合作。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "11月20日",
+    funding: "RA 全额资助",
+    notes: "Dorsa Sadigh 实验室竞争激烈，建议发邮件附上 CV 和1-2篇代表性论文（或预印本），说明与实验室方向的具体契合点。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Dorsa Sadigh",
+      title: "Associate Professor of CS & EE",
+      directions: "人机交互、VLA、基础模型for机器人、协作学习",
+      homepage: "https://dorsa.fyi",
+      scholar: "https://scholar.google.com/citations?user=FNFKfRIAAAAJ",
+      x: "https://x.com/dorsasadigh",
+      github: ""
+    },
+    {
+      name: "Chelsea Finn",
+      title: "Associate Professor of CS",
+      directions: "元学习 (MAML)、少样本学习、机器人泛化",
+      homepage: "https://ai.stanford.edu/~cbfinn",
+      scholar: "https://scholar.google.com/citations?user=vfPE6hgAAAAJ",
+      x: "https://x.com/chelseabfinn",
+      github: "https://github.com/cbfinn"
+    }
+  ],
+  students: {
+    current: ["Annie Chen（HRI + LLM）", "Rika Antonova（接触丰富操控）"],
+    alumni: "毕业生进入 Google Brain、Meta FAIR、OpenAI 以及高校助理教授岗位。"
+  }
 },
-
 {
-category:"VLA",
-rank:2,
-lab:"RAIL Lab",
-university:"UC Berkeley",
-location:"Berkeley, California",
-tags:["Robot Learning","VLA"],
-faculty:[
-{name:"Sergey Levine",link:"https://people.eecs.berkeley.edu/~svlevine"}
-]
+  id: 4,
+  rank: 2,
+  university: "UC Berkeley",
+  uShort: "UC Berkeley",
+  lab: "Berkeley AI Research (BAIR) — Robot Learning",
+  directions: ["Robot Learning", "VLA", "Reinforcement Learning", "Embodied AI"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Berkeley, California",
+  address: "Soda Hall, UC Berkeley, CA 94720",
+  lab_url: "https://bair.berkeley.edu",
+  intro: "BAIR 是全球最顶尖的 AI 研究中心之一，机器人学习方向处于绝对领先地位。Sergey Levine 和 Pieter Abbeel 的团队开创了深度强化学习用于机器人操控的核心方法，近年推动 RT-X、Open-X Embodiment 等大规模跨平台机器人数据集。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月8日",
+    funding: "RA/TA 全额资助",
+    notes: "申请 Berkeley EECS 博士需通过研究生院统一申请，导师在录取后确定。建议同时申请多位感兴趣导师，提前套磁有助于提升录取概率。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Sergey Levine",
+      title: "Professor of EECS",
+      directions: "深度强化学习、离线RL、VLA基础模型、数据驱动机器人",
+      homepage: "https://people.eecs.berkeley.edu/~svlevine",
+      scholar: "https://scholar.google.com/citations?user=8R35rCwAAAAJ",
+      x: "https://x.com/svlevine",
+      github: "https://github.com/sergeylevine"
+    },
+    {
+      name: "Pieter Abbeel",
+      title: "Professor of EECS",
+      directions: "学徒式学习、机器人操控、基础模型",
+      homepage: "https://people.eecs.berkeley.edu/~pabbeel",
+      scholar: "https://scholar.google.com/citations?user=vtwH6GkAAAAJ",
+      x: "https://x.com/pabbeel",
+      github: ""
+    },
+    {
+      name: "Ken Goldberg",
+      title: "Professor of EECS & IEOR",
+      directions: "工业机器人抓取、不确定性感知操控",
+      homepage: "https://goldberg.berkeley.edu",
+      scholar: "https://scholar.google.com/citations?user=MeswIrwAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Aviral Kumar（离线RL）", "Suraj Nair（VLA）", "Homer Walke（多任务机器人）"],
+    alumni: "毕业生创立或加入 Covariant、Physical Intelligence (π.1) 等具身 AI 头部公司。"
+  }
 },
-
 {
-category:"Autonomous Driving",
-rank:1,
-lab:"Robotics Institute",
-university:"Carnegie Mellon University",
-location:"Pittsburgh, Pennsylvania",
-tags:["Autonomous Driving","Perception"],
-faculty:[
-{name:"Sebastian Scherer",link:"https://theairlab.org"},
-{name:"Maxim Likhachev",link:"https://www.cs.cmu.edu/~maxim"},
-{name:"David Held",link:"https://davheld.github.io"}
-]
+  id: 5,
+  rank: 2,
+  university: "Carnegie Mellon University",
+  uShort: "CMU",
+  lab: "Robotics Institute (RI)",
+  directions: ["Robot Learning", "Autonomous Driving", "Manipulation", "Perception"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "Pittsburgh, Pennsylvania",
+  address: "5000 Forbes Ave, Pittsburgh, PA 15213",
+  lab_url: "https://www.ri.cmu.edu",
+  intro: "CMU 机器人研究所是全球最古老、规模最大的机器人专项研究机构，拥有独立的机器人学博士项目（PhD in Robotics）。研究覆盖自动驾驶、工业操控、飞行机器人、人机交互等几乎所有机器人细分领域，工业合作与成果转化能力极强。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月1日",
+    funding: "RA/TA 全额资助（RI 博士基本覆盖全额奖学金）",
+    notes: "CMU RI 提供独立 PhD in Robotics 项目，也可通过 CS、ECE 等系申请。RI 项目需提前确定意向导师，强烈建议提前套磁。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "David Held",
+      title: "Associate Professor",
+      directions: "机器人操控、变形体操控、点云感知",
+      homepage: "https://davheld.github.io",
+      scholar: "https://scholar.google.com/citations?user=s4nUF7MAAAAJ",
+      x: "",
+      github: "https://github.com/davheld"
+    },
+    {
+      name: "Deepak Pathak",
+      title: "Assistant Professor",
+      directions: "自监督探索、好奇心驱动学习、具身智能",
+      homepage: "https://www.cs.cmu.edu/~dpathak",
+      scholar: "https://scholar.google.com/citations?user=MADRFugAAAAJ",
+      x: "https://x.com/pathak2206",
+      github: "https://github.com/pathak22"
+    },
+    {
+      name: "Abhinav Gupta",
+      title: "Professor",
+      directions: "无监督视觉、自监督表征、机器人感知",
+      homepage: "http://www.cs.cmu.edu/~abhinavg",
+      scholar: "https://scholar.google.com/citations?user=kUIcjOwAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Shikhar Bahl（手部操控）", "Russell Mendonca（跨实体迁移）", "Mihir Prabhudesai（强化学习+LLM）"],
+    alumni: "毕业生就职于 Waymo、Argo AI（Ford/VW）、NVIDIA、CMU 教职等。"
+  }
 },
-
 {
-category:"Drone Robotics",
-rank:1,
-lab:"GRASP Lab",
-university:"University of Pennsylvania",
-location:"Philadelphia, Pennsylvania",
-tags:["Drone","Swarm Robotics"],
-faculty:[
-{name:"Vijay Kumar",link:"https://www.grasp.upenn.edu/people/vijay-kumar"},
-{name:"Kostas Daniilidis",link:"https://www.cis.upenn.edu/~kostas"}
-]
+  id: 6,
+  rank: 3,
+  university: "University of Washington",
+  uShort: "UW",
+  lab: "Personal Robotics Lab (PRL) & UW Robotics",
+  directions: ["Embodied AI", "Robot Learning", "Manipulation", "Perception"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Seattle, Washington",
+  address: "Paul G. Allen Center, Seattle, WA 98195",
+  lab_url: "https://personalrobotics.cs.washington.edu",
+  intro: "UW 机器人研究在 Dieter Fox 和 Siddhartha Srinivasa 的带领下享有国际声誉，尤其在个人服务机器人、灵巧操控、语义感知领域成果显著。近年与 NVIDIA 等公司深度合作，在合成数据生成与具身基础模型方向发力。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA/TA 全额资助",
+    notes: "UW CSE 博士项目竞争激烈，录取率约 5%。建议明确说明研究方向，附上已发表/在投论文最佳。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Dieter Fox",
+      title: "Professor of CS",
+      directions: "机器人感知、语义场景理解、人手操控、NVIDIA 合作",
+      homepage: "https://homes.cs.washington.edu/~fox",
+      scholar: "https://scholar.google.com/citations?user=AoTMbz4AAAAJ",
+      x: "",
+      github: ""
+    },
+    {
+      name: "Siddhartha Srinivasa",
+      title: "Boeing Endowed Professor",
+      directions: "灵巧操控、人机协作、规划",
+      homepage: "https://goodrobot.ai",
+      scholar: "https://scholar.google.com/citations?user=S6V7MGUAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Wentao Yuan（3D场景理解）", "Cheng Chi（扩散策略）"],
+    alumni: "毕业生进入 Google、NVIDIA、Amazon Robotics、微软研究院。"
+  }
 },
-
 {
-category:"Humanoid Robotics",
-rank:1,
-lab:"MIT Robot Locomotion Group",
-university:"MIT",
-location:"Cambridge, Massachusetts",
-tags:["Humanoid","Control"],
-faculty:[
-{name:"Russ Tedrake",link:"https://groups.csail.mit.edu/robotics-center/people/tedrake"}
-]
+  id: 7,
+  rank: 3,
+  university: "University of Pennsylvania",
+  uShort: "Penn",
+  lab: "GRASP Laboratory",
+  directions: ["Drone", "Swarm Robotics", "Control", "Perception"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "Philadelphia, Pennsylvania",
+  address: "3330 Walnut St, Philadelphia, PA 19104",
+  lab_url: "https://www.grasp.upenn.edu",
+  intro: "GRASP Lab 是无人机与群体机器人领域的全球标杆实验室，Vijay Kumar 教授带领的团队在微型 UAV、多机器人协调与空中操控方向开创了众多里程碑性工作，TED 演讲广为人知。同时在 VLA 与感知方向不断拓展。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA/TA 全额资助",
+    notes: "Penn GRASP 提供跨系（MEAM、ESE、CIS）联合博士项目，建议明确意向方向申请对应系。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Vijay Kumar",
+      title: "Nemirovsky Family Dean, Penn Engineering",
+      directions: "无人机、多机器人系统、空中操控",
+      homepage: "https://www.grasp.upenn.edu/people/vijay-kumar",
+      scholar: "https://scholar.google.com/citations?user=d5xHM_QAAAAJ",
+      x: "",
+      github: ""
+    },
+    {
+      name: "Kostas Daniilidis",
+      title: "Ruth Yalom Stone Professor of CS",
+      directions: "事件相机、3D视觉、无人机导航",
+      homepage: "https://www.cis.upenn.edu/~kostas",
+      scholar: "https://scholar.google.com/citations?user=4sOWi0QAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Akhil Sathuluri（多机器人协调）", "Kris Kitani（行为预测）"],
+    alumni: "毕业生进入学术界（多人获 NSF CAREER 奖）及 Amazon、波音、洛克希德马丁等。"
+  }
 },
-
 {
-category:"Embodied AI",
-rank:1,
-lab:"Personal Robotics Lab",
-university:"University of Washington",
-location:"Seattle, Washington",
-tags:["Embodied AI","Robot Learning"],
-faculty:[
-{name:"Dieter Fox",link:"https://homes.cs.washington.edu/~fox"}
-]
+  id: 8,
+  rank: 4,
+  university: "Columbia University",
+  uShort: "Columbia",
+  lab: "ROAR Lab (Robotics & Rehabilitation)",
+  directions: ["Manipulation", "Embodied AI", "Robot Learning", "Multi-modal"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "New York, New York",
+  address: "500 W 120th St, New York, NY 10027",
+  lab_url: "https://roar.me.columbia.edu",
+  intro: "Columbia 机器人研究依托 ROAR Lab 和 Robot Learning Lab，在灵巧操控、触觉感知、机器人辅助康复与 LLM 驱动的任务规划方向积累深厚，地处纽约也带来丰富的工业合作资源。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA/TA 资助（部分导师提供全额）",
+    notes: "Columbia 博士申请需通过各系（ME、CS）分别申请，机器人方向主要在 ME 系。建议联系导师确认招生。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Matei Ciocarlie",
+      title: "Associate Professor of ME",
+      directions: "灵巧手操控、触觉感知、康复机器人",
+      homepage: "https://roar.me.columbia.edu/people/matei-ciocarlie",
+      scholar: "https://scholar.google.com/citations?user=6tWFpJwAAAAJ",
+      x: "",
+      github: ""
+    },
+    {
+      name: "Shuran Song",
+      title: "Assistant Professor of CS",
+      directions: "3D感知、机器人操控、扩散策略、VLA",
+      homepage: "https://shurans.github.io",
+      scholar: "https://scholar.google.com/citations?user=pRqJ3BQAAAAJ",
+      x: "https://x.com/shuransong",
+      github: "https://github.com/shurans"
+    }
+  ],
+  students: {
+    current: ["Chuer Pan（触觉+操控）", "Huy Ha（扩散机器人）"],
+    alumni: "毕业生进入苹果机器人、Google Robotics 及高校教职。"
+  }
 },
-
 {
-category:"Autonomous Systems",
-rank:1,
-lab:"Michigan Robotics",
-university:"University of Michigan",
-location:"Ann Arbor, Michigan",
-tags:["Autonomy","Perception"],
-faculty:[
-{name:"Mingyu Ding",link:"#"}
-]
+  id: 9,
+  rank: 4,
+  university: "Georgia Institute of Technology",
+  uShort: "Georgia Tech",
+  lab: "Institute for Robotics and Intelligent Machines (IRIM)",
+  directions: ["AI Robotics", "Robot Learning", "HRI", "Perception"],
+  region: "South",
+  regionLabel: "南部",
+  location: "Atlanta, Georgia",
+  address: "801 Atlantic Dr NW, Atlanta, GA 30332",
+  lab_url: "https://irim.gatech.edu",
+  intro: "Georgia Tech IRIM 整合了全校 80+ 位机器人领域教授，是美国规模最大的机器人研究联合体之一。在机器人辅助生活、工业自动化、人机协作、认知机器人等方向成果丰富，近年在 LLM 驱动的任务规划方向快速发展。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月1日",
+    funding: "RA/TA 全额资助",
+    notes: "可通过 CS、ME、ECE、Robotics 等多系申请，建议明确目标导师。整体竞争相比 MIT/Stanford 略低，录取友好。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Zsolt Kira",
+      title: "Associate Professor of CS",
+      directions: "持续学习、多模态感知、机器人泛化",
+      homepage: "https://faculty.cc.gatech.edu/~zkira",
+      scholar: "https://scholar.google.com/citations?user=r8EXx4kAAAAJ",
+      x: "",
+      github: ""
+    },
+    {
+      name: "Sonia Chernova",
+      title: "Associate Professor of CS",
+      directions: "任务规划、人机协作、LLM for Robots",
+      homepage: "https://faculty.cc.gatech.edu/~chernova",
+      scholar: "https://scholar.google.com/citations?user=yxrCULYAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Zulfiqar Zaidi（机器人规划）", "Arjun Gupta（具身导航）"],
+    alumni: "毕业生遍及美国中大型机器人公司及学术界。"
+  }
 },
-
 {
-category:"AI Robotics",
-rank:1,
-lab:"Georgia Tech IRIM",
-university:"Georgia Tech",
-location:"Atlanta, Georgia",
-tags:["AI Robotics"],
-faculty:[
-{name:"Ayanna Howard",link:"https://ayannahoward.com"}
-]
+  id: 10,
+  rank: 5,
+  university: "University of California, San Diego",
+  uShort: "UCSD",
+  lab: "HIRO Group & Contextual Robotics Institute",
+  directions: ["HRI", "Robot Learning", "Embodied AI", "Multi-modal"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "La Jolla, California",
+  address: "9500 Gilman Dr, La Jolla, CA 92093",
+  lab_url: "https://existentialrobotics.org",
+  intro: "UCSD 机器人研究以 Hao Su（Existential Robotics）、Nikolay Atanasov 等为代表，在 3D 感知、具身导航、点云处理（PointNet 系列）和 VLA 方向有重要贡献，近年推动 RoboPoint、VLP 等代表性工作。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月20日",
+    funding: "RA/TA 全额资助",
+    notes: "UCSD 录取相对友好，建议通过 CSE、ECE 或 MAE 系申请，明确意向导师。套磁回复率较高。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Hao Su",
+      title: "Associate Professor of CS",
+      directions: "3D感知、PointNet、具身智能、VLA",
+      homepage: "https://cseweb.ucsd.edu/~haosu",
+      scholar: "https://scholar.google.com/citations?user=Hz9lgY8AAAAJ",
+      x: "",
+      github: "https://github.com/haosulab"
+    },
+    {
+      name: "Xiaolong Wang",
+      title: "Assistant Professor of ECE",
+      directions: "视觉运动控制、触觉感知、灵巧手、机器人泛化",
+      homepage: "https://xiaolonw.github.io",
+      scholar: "https://scholar.google.com/citations?user=Y8O9N_UAAAAJ",
+      x: "https://x.com/xlwang_ucsd",
+      github: "https://github.com/xiaolonw"
+    }
+  ],
+  students: {
+    current: ["Yuzhe Qin（灵巧手操控）", "Fanbo Xiang（仿真环境）"],
+    alumni: "毕业生进入 Nvidia、Qualcomm、谷歌及学术界。"
+  }
+},
+{
+  id: 11,
+  rank: 5,
+  university: "New York University",
+  uShort: "NYU",
+  lab: "CILVR Lab / Machines In Motion Lab",
+  directions: ["Robot Learning", "Control", "Reinforcement Learning", "Foundation Models"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "New York, New York",
+  address: "60 Fifth Ave, New York, NY 10011",
+  lab_url: "https://wp.nyu.edu/machinesinmotion",
+  intro: "NYU 机器人研究近年因 Lerrel Pinto 和 Ludovic Righetti 的加入大幅提升影响力。CILVR Lab（Yann LeCun）提供强大的大模型基础支持，Machines in Motion Lab 专注于腿式机器人控制与本体感知。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA/TA 资助",
+    notes: "NYU Courant/Tandon 双校区申请，注意区分系别。Lerrel Pinto 组近年招生积极，建议优先联系。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Lerrel Pinto",
+      title: "Assistant Professor of CS",
+      directions: "机器人学习、无监督学习、跨实体策略",
+      homepage: "https://www.lerrelpinto.com",
+      scholar: "https://scholar.google.com/citations?user=CAF3CQUAAAAJ",
+      x: "https://x.com/lerrelpinto",
+      github: "https://github.com/lerobot"
+    },
+    {
+      name: "Ludovic Righetti",
+      title: "Associate Professor",
+      directions: "腿式机器人、最优控制、动态运动规划",
+      homepage: "https://wp.nyu.edu/machinesinmotion/people/ludovic-righetti",
+      scholar: "https://scholar.google.com/citations?user=LbP3gFkAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Dishaan Ahuja（跨实体操控）", "Yihe Tang（本体感知）"],
+    alumni: "毕业生主要去向为工业界（Meta、Amazon）和学术界初级岗位。"
+  }
+},
+{
+  id: 12,
+  rank: 6,
+  university: "California Institute of Technology",
+  uShort: "Caltech",
+  lab: "AMBER Lab & Autonomous Robotics and Control Lab (ARC)",
+  directions: ["Control", "Legged Robots", "Safety", "Embodied AI"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Pasadena, California",
+  address: "1200 E California Blvd, Pasadena, CA 91125",
+  lab_url: "https://www.bipedalrobotics.com",
+  intro: "Caltech AMBER Lab（Aaron Ames）在双足机器人、腿式运动控制和安全约束强化学习（CBF）领域处于全球领先，代表成果包括 Cassie、Digit 等双足机器人上的实验。ARC Lab 致力于自主系统的感知与规划。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA 全额资助",
+    notes: "Caltech CMS/ME 博士项目规模小、竞争激烈，录取率极低。需要强数学背景（优化、控制理论）。",
+    status: "closing"
+  },
+  professors: [
+    {
+      name: "Aaron Ames",
+      title: "Bren Professor of ME & CS",
+      directions: "双足运动、安全强化学习（CBF）、仿人机器人",
+      homepage: "https://ames.caltech.edu",
+      scholar: "https://scholar.google.com/citations?user=CeIGEq4AAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Noel Csomay-Shanklin（运动规划）", "William Comber（仿人机器人）"],
+    alumni: "毕业生进入 Agility Robotics、Boston Dynamics、苹果机器人及学术界。"
+  }
+},
+{
+  id: 13,
+  rank: 6,
+  university: "Princeton University",
+  uShort: "Princeton",
+  lab: "Princeton Embodied AI Lab",
+  directions: ["Embodied AI", "VLA", "Foundation Models", "Multi-modal"],
+  region: "East",
+  regionLabel: "东海岸",
+  location: "Princeton, New Jersey",
+  address: "Princeton, NJ 08544",
+  lab_url: "https://embodied-intelligence.cs.princeton.edu",
+  intro: "Princeton 具身 AI 实验室在 Karthik Narasimhan 和 Anirudha Majumdar 的带领下，在语言驱动的机器人规划、VLA 大模型评估与多模态感知方向快速成长，是东海岸新兴的具身 AI 研究重镇。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月1日",
+    funding: "RA/TA 全额资助（Princeton 承诺全额奖学金）",
+    notes: "Princeton CS 博士全额奖学金保障，待遇优厚。建议与目标导师提前联系，说明具体研究问题。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Karthik Narasimhan",
+      title: "Associate Professor of CS",
+      directions: "LLM for Robotics、语言驱动规划、具身智能",
+      homepage: "https://karthikncode.github.io",
+      scholar: "https://scholar.google.com/citations?user=HX-4YB4AAAAJ",
+      x: "https://x.com/karthikncode",
+      github: "https://github.com/knarasimhan"
+    },
+    {
+      name: "Anirudha Majumdar",
+      title: "Assistant Professor of ME & AOS",
+      directions: "安全控制、验证、无人机、不确定性量化",
+      homepage: "https://irom-lab.princeton.edu",
+      scholar: "https://scholar.google.com/citations?user=OiF9j8IAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Michael Equi（VLA评估）", "Rahul Mysore（具身规划）"],
+    alumni: "毕业生进入顶级 AI 公司研究岗及常青藤学校教职。"
+  }
+},
+{
+  id: 14,
+  rank: 7,
+  university: "University of Texas at Austin",
+  uShort: "UT Austin",
+  lab: "Robot Perception and Learning Lab (RPL)",
+  directions: ["Robot Learning", "Embodied AI", "Perception", "LLM"],
+  region: "South",
+  regionLabel: "南部",
+  location: "Austin, Texas",
+  address: "2317 Speedway, Austin, TX 78712",
+  lab_url: "https://rpl.cs.utexas.edu",
+  intro: "UT Austin RPL 由 Yuke Zhu 教授领导，在具身智能、物理仿真驱动的机器人学习、多模态感知与 LLM 机器人规划方向成果突出。与 NVIDIA 有深度合作（IsaacLab、GROOT 等项目）。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月15日",
+    funding: "RA 全额资助",
+    notes: "UT Austin CS 博士竞争激烈，套磁建议具体说明感兴趣的研究问题和方法，Yuke Zhu 组回复率较高。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Yuke Zhu",
+      title: "Assistant Professor of CS",
+      directions: "具身智能、物理感知、人形机器人、大模型机器人",
+      homepage: "https://yukezhu.me",
+      scholar: "https://scholar.google.com/citations?user=5zPGdQ4AAAAJ",
+      x: "https://x.com/yukez_",
+      github: "https://github.com/yukezhu"
+    }
+  ],
+  students: {
+    current: ["Chen Wang（物理感知）", "Linxi (Jim) Fan（仿真平台）"],
+    alumni: "毕业生主要进入 NVIDIA 研究院及顶尖高校。"
+  }
+},
+{
+  id: 15,
+  rank: 7,
+  university: "University of California, Los Angeles",
+  uShort: "UCLA",
+  lab: "UCLA Samueli Robotics & Mechanisms Lab / Visual Machines Group",
+  directions: ["VLA", "Multi-modal", "Robot Learning", "Embodied AI"],
+  region: "West",
+  regionLabel: "西海岸",
+  location: "Los Angeles, California",
+  address: "405 Hilgard Ave, Los Angeles, CA 90095",
+  lab_url: "https://vcla.stat.ucla.edu",
+  intro: "UCLA 在 Song-Chun Zhu（朱松纯）创立的视觉认知实验室（VCLA）基础上，逐步在具身智能、VLA 和认知机器人方向建立了独特的以认知科学为基础的研究路径，同时 Bolei Zhou（周博磊）在可解释驾驶与视觉表征方向影响力显著。",
+  admission: {
+    recruit: true,
+    season: "秋季 (Fall)",
+    deadline: "12月1日",
+    funding: "RA/TA 资助",
+    notes: "UCLA CS/EE 博士申请，建议同时申请多个相关导师，套磁可提升成功率。",
+    status: "open"
+  },
+  professors: [
+    {
+      name: "Bolei Zhou",
+      title: "Assistant Professor of CS",
+      directions: "可解释驾驶、世界模型、视觉表征",
+      homepage: "https://boleizhou.github.io",
+      scholar: "https://scholar.google.com/citations?user=9D4aG8AAAAAJ",
+      x: "https://x.com/boleizhou",
+      github: "https://github.com/zhoubolei"
+    },
+    {
+      name: "Fabio Ramos",
+      title: "Adjunct Professor / NVIDIA Research",
+      directions: "概率机器人、贝叶斯深度学习、仿真to真实迁移",
+      homepage: "https://fabioramos.github.io",
+      scholar: "https://scholar.google.com/citations?user=VuC-Q6YAAAAJ",
+      x: "",
+      github: ""
+    }
+  ],
+  students: {
+    current: ["Quanyi Li（世界模型）", "Zilin Si（具身VLA）"],
+    alumni: "毕业生进入国内外顶尖 AI 研究机构及高校。"
+  }
 }
-
 ];
 
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentLab = null;
+let activeTab = 'overview';
+let currentView = 'grid';
+let activeFilters = { directions: new Set(), regions: new Set(), status: new Set() };
 
-/* ===========================
-RENDER
-=========================== */
-
-function render(){
-
-const container=document.getElementById("content")
-
-container.innerHTML=""
-
-let categories={}
-
-labs.forEach(lab=>{
-if(!categories[lab.category]) categories[lab.category]=[]
-categories[lab.category].push(lab)
-})
-
-for(let cat in categories){
-
-let section=document.createElement("div")
-section.className="category"
-
-let title=document.createElement("h2")
-title.innerText=cat
-
-section.appendChild(title)
-
-categories[cat].sort((a,b)=>a.rank-b.rank)
-
-categories[cat].forEach(lab=>{
-
-let div=document.createElement("div")
-div.className="lab"
-
-let facultyHTML=""
-
-lab.faculty.forEach(f=>{
-facultyHTML+=`<a href="${f.link}" target="_blank">${f.name}</a>`
-})
-
-let tagHTML=""
-
-lab.tags.forEach(t=>{
-tagHTML+=`<span class="tag">${t}</span>`
-})
-
-div.innerHTML=`
-
-<p class="rank">Rank #${lab.rank}</p>
-
-<h3>${lab.lab}</h3>
-
-<p class="location">University: ${lab.university} | Location: ${lab.location}</p>
-
-${tagHTML}
-
-<div class="faculty">
-
-<b>Faculty</b>
-
-${facultyHTML}
-
-</div>
-
-`
-
-section.appendChild(div)
-
-})
-
-container.appendChild(section)
-
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  buildFilters();
+  applyFilters();
 }
 
+/* ============================================================
+   BUILD FILTERS
+   ============================================================ */
+function buildFilters() {
+  // Directions
+  const allDirs = new Set();
+  LABS.forEach(l => l.directions.forEach(d => allDirs.add(d)));
+  const dirContainer = document.getElementById('filter-directions');
+  allDirs.forEach(dir => {
+    const count = LABS.filter(l => l.directions.includes(dir)).length;
+    dirContainer.innerHTML += filterItem('dir', dir, dir, count);
+  });
+
+  // Regions
+  const allRegions = new Map();
+  LABS.forEach(l => allRegions.set(l.region, l.regionLabel));
+  const regContainer = document.getElementById('filter-locations');
+  allRegions.forEach((label, key) => {
+    const count = LABS.filter(l => l.region === key).length;
+    regContainer.innerHTML += filterItem('reg', key, label, count);
+  });
+
+  // Status
+  const statusMap = { open: '开放申请', closing: '即将截止', closed: '暂不招生' };
+  const statusContainer = document.getElementById('filter-status');
+  Object.entries(statusMap).forEach(([key, label]) => {
+    const count = LABS.filter(l => l.admission.status === key).length;
+    statusContainer.innerHTML += filterItem('sta', key, label, count);
+  });
 }
 
-
-/* ===========================
-SEARCH
-=========================== */
-
-function searchLabs(){
-
-let input=document.getElementById("search").value.toLowerCase()
-
-let labsDOM=document.getElementsByClassName("lab")
-
-for(let lab of labsDOM){
-
-let text=lab.innerText.toLowerCase()
-
-if(text.includes(input))
-lab.style.display="block"
-else
-lab.style.display="none"
-
+function filterItem(type, value, label, count) {
+  return `<label class="filter-item">
+    <input type="checkbox" data-type="${type}" value="${value}" onchange="onFilterChange(this)">
+    <span>${label}</span>
+    <span class="filter-count">${count}</span>
+  </label>`;
 }
 
+function onFilterChange(el) {
+  const { type, value } = el.dataset;
+  const map = { dir: 'directions', reg: 'regions', sta: 'status' };
+  const key = map[type];
+  if (el.checked) activeFilters[key].add(value);
+  else activeFilters[key].delete(value);
+  applyFilters();
 }
 
-render()
+function clearFilters() {
+  activeFilters = { directions: new Set(), regions: new Set(), status: new Set() };
+  document.querySelectorAll('.filter-item input').forEach(el => el.checked = false);
+  document.getElementById('search-input').value = '';
+  applyFilters();
+}
 
+/* ============================================================
+   APPLY FILTERS + SORT + RENDER
+   ============================================================ */
+function applyFilters() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const sort = document.getElementById('sort-select').value;
+
+  let filtered = LABS.filter(lab => {
+    if (activeFilters.directions.size > 0) {
+      if (!lab.directions.some(d => activeFilters.directions.has(d))) return false;
+    }
+    if (activeFilters.regions.size > 0) {
+      if (!activeFilters.regions.has(lab.region)) return false;
+    }
+    if (activeFilters.status.size > 0) {
+      if (!activeFilters.status.has(lab.admission.status)) return false;
+    }
+    if (query) {
+      const searchable = [
+        lab.university, lab.uShort, lab.lab, lab.intro,
+        ...lab.directions,
+        ...lab.professors.map(p => p.name + ' ' + p.directions)
+      ].join(' ').toLowerCase();
+      if (!searchable.includes(query)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  if (sort === 'rank') filtered.sort((a, b) => a.rank - b.rank || a.uShort.localeCompare(b.uShort));
+  else if (sort === 'name') filtered.sort((a, b) => a.uShort.localeCompare(b.uShort));
+  else if (sort === 'admit-open') filtered.sort((a, b) => {
+    const o = { open: 0, closing: 1, closed: 2 };
+    return (o[a.admission.status] ?? 3) - (o[b.admission.status] ?? 3);
+  });
+
+  renderCards(filtered);
+}
+
+/* ============================================================
+   RENDER CARDS
+   ============================================================ */
+function renderCards(labs) {
+  const container = document.getElementById('cards-container');
+  const countEl = document.getElementById('results-count');
+
+  if (currentView === 'list') container.classList.add('list-view');
+  else container.classList.remove('list-view');
+
+  countEl.innerHTML = `共 <strong>${labs.length}</strong> 个实验室`;
+
+  if (labs.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="icon">🔍</div>
+      <p>没有找到符合条件的实验室，请尝试调整筛选条件</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = labs.map(lab => {
+    const statusMap = { open: ['admit-open', '开放招生'], closing: ['admit-closing', '即将截止'], closed: ['admit-closed', '暂不招生'] };
+    const [statusClass, statusLabel] = statusMap[lab.admission.status] || ['', ''];
+    const profNames = lab.professors.slice(0, 3).map(p => p.name).join('、');
+    const tagHTML = lab.directions.slice(0, 4).map(t => `<span class="tag">${t}</span>`).join('');
+    return `<div class="lab-card" onclick="openModal(${lab.id})">
+      <div class="card-header">
+        <span class="card-rank-badge">#${lab.rank} ${lab.uShort}</span>
+        <span class="admit-badge ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="card-lab-name">${lab.lab}</div>
+      <div class="card-university">📍 ${lab.location}</div>
+      <div class="card-intro">${lab.intro}</div>
+      <div class="tags">${tagHTML}</div>
+      <div class="card-professors"><strong>导师：</strong>${profNames}${lab.professors.length > 3 ? ' 等' : ''}</div>
+      <div class="card-footer">
+        <span class="card-season">📅 ${lab.admission.season}</span>
+        <span class="card-funding">💰 ${lab.admission.funding.length > 20 ? lab.admission.funding.slice(0, 20) + '…' : lab.admission.funding}</span>
+        <span class="view-detail-btn">查看详情 →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   VIEW TOGGLE
+   ============================================================ */
+function setView(v) {
+  currentView = v;
+  document.getElementById('grid-btn').classList.toggle('active', v === 'grid');
+  document.getElementById('list-btn').classList.toggle('active', v === 'list');
+  applyFilters();
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+function openModal(id) {
+  const lab = LABS.find(l => l.id === id);
+  if (!lab) return;
+  currentLab = lab;
+  activeTab = 'overview';
+
+  // Header
+  document.getElementById('modal-title').textContent = lab.lab;
+  document.getElementById('modal-subtitle').textContent = `${lab.university} · ${lab.location}`;
+  document.getElementById('modal-tags').innerHTML = lab.directions.map(d => `<span class="tag">${d}</span>`).join('');
+
+  // Reset tabs
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+
+  renderModalBody('overview', lab);
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const t = b.getAttribute('onclick').match(/'(\w+)'/)?.[1];
+    b.classList.toggle('active', t === tab);
+  });
+  renderModalBody(tab, currentLab);
+}
+
+function renderModalBody(tab, lab) {
+  const body = document.getElementById('modal-body');
+  body.innerHTML = '';
+
+  if (tab === 'overview') {
+    const statusMap = { open: ['admit-open', '✅ 开放招生'], closing: ['admit-closing', '⚠️ 即将截止'], closed: ['admit-closed', '❌ 暂不招生'] };
+    const [sc, sl] = statusMap[lab.admission.status] || [];
+    body.innerHTML = `
+      <div class="section-title">基础信息</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="label">综合排名</div><div class="value">第 ${lab.rank} 梯队</div></div>
+        <div class="info-item"><div class="label">所在地区</div><div class="value">${lab.regionLabel} · ${lab.location}</div></div>
+        <div class="info-item"><div class="label">实验室地址</div><div class="value">${lab.address}</div></div>
+        <div class="info-item"><div class="label">官网</div><div class="value"><a href="${lab.lab_url}" target="_blank" rel="noopener">${lab.lab_url}</a></div></div>
+      </div>
+      <div class="section-title">实验室简介</div>
+      <div class="intro-text">${lab.intro}</div>
+      <div class="section-title">招生状态</div>
+      <div class="admit-status-badge ${sc}">${sl}</div>
+      <div style="font-size:13.5px;color:var(--text2)">截止日期：<strong>${lab.admission.deadline}</strong> &nbsp;|&nbsp; 招生季：<strong>${lab.admission.season}</strong></div>
+    `;
+  } else if (tab === 'professors') {
+    body.innerHTML = `<div class="section-title">导师列表（${lab.professors.length} 位）</div>
+      <div class="prof-list">
+        ${lab.professors.map(p => `
+          <div class="prof-card">
+            <div class="prof-name">${p.name}</div>
+            <div class="prof-title">${p.title}</div>
+            <div class="prof-directions">🔬 研究方向：${p.directions}</div>
+            <div class="prof-links">
+              ${p.homepage ? `<a class="prof-link" href="${p.homepage}" target="_blank" rel="noopener">🌐 主页</a>` : ''}
+              ${p.scholar ? `<a class="prof-link" href="${p.scholar}" target="_blank" rel="noopener">📚 Scholar</a>` : ''}
+              ${p.x ? `<a class="prof-link" href="${p.x}" target="_blank" rel="noopener">𝕏 Twitter</a>` : ''}
+              ${p.github ? `<a class="prof-link" href="${p.github}" target="_blank" rel="noopener">🐙 GitHub</a>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } else if (tab === 'admission') {
+    const statusMap = { open: ['admit-open', '✅ 开放招生'], closing: ['admit-closing', '⚠️ 即将截止'], closed: ['admit-closed', '❌ 暂不招生'] };
+    const [sc, sl] = statusMap[lab.admission.status] || [];
+    body.innerHTML = `
+      <div class="admit-status-badge ${sc}">${sl}</div>
+      <div class="admit-grid">
+        <div class="admit-card"><div class="label">是否招收博士</div><div class="value">${lab.admission.recruit ? '✅ 是' : '❌ 否'}</div></div>
+        <div class="admit-card"><div class="label">招生季节</div><div class="value">${lab.admission.season}</div></div>
+        <div class="admit-card"><div class="label">申请截止</div><div class="value">${lab.admission.deadline}</div></div>
+        <div class="admit-card"><div class="label">资助情况</div><div class="value">${lab.admission.funding}</div></div>
+      </div>
+      <div class="section-title">⚠️ 申请注意事项</div>
+      <div class="notes-box">${lab.admission.notes}</div>`;
+  } else if (tab === 'students') {
+    body.innerHTML = `
+      <div class="student-section">
+        <div class="section-title">在读博士生</div>
+        <div class="student-list">
+          ${lab.students.current.map(s => `<div class="student-item"><span>${s}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="student-section">
+        <div class="section-title">毕业生去向</div>
+        <div class="alumni-text">${lab.students.alumni}</div>
+      </div>`;
+  }
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModalDirect();
+});
+
+/* ============================================================
+   START
+   ============================================================ */
+init();
 </script>
-
 </body>
-
 </html>
